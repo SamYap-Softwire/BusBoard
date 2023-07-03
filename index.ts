@@ -3,15 +3,14 @@ import promptModule from "prompt-sync";
 const prompt = promptModule();
 
 const main = async () => {
-  // const postCode = prompt("Please enter a post code: "); //  NW51TL
-  const postCode = "NW51TL";
+  const postCode = prompt("Please enter a post code: "); //  NW51TL
+  // const postCode = "NW51TL";
   const postCodeToLatLonAPI = `https://api.postcodes.io/postcodes/${postCode}`;
   const latLon = await fetchByAwait(postCodeToLatLonAPI);
   const [lat, lon] = getLatLon(latLon.result);
 
-  let radius = 200;
+  let radius = 400; // can let users choose radius they want OR automatic 
   const latLonToStopPointAPI = `https://api.tfl.gov.uk/StopPoint/?lat=${lat}&lon=${lon}&stopTypes=NaptanPublicBusCoachTram&radius=${radius}`;
-  // might want to check if at least 2 are returned, else increase radius (logarithmically)
   const stopPoint = await fetchByAwait(latLonToStopPointAPI);
   const idArray = getStopPoint(stopPoint.stopPoints);
 
@@ -19,6 +18,7 @@ const main = async () => {
   const firstFiveBusArray = getBusInfo(busArray);
   display(firstFiveBusArray);
 };
+
 
 // INTERFACES
 
@@ -39,6 +39,7 @@ interface stopPointObject {
   naptanId: string;
 }
 
+
 // FETCH FROM API
 
 const fetchByAwait = async (url: string): Promise<any> => {
@@ -50,6 +51,7 @@ const fetchByAwait = async (url: string): Promise<any> => {
     throw new Error(`${error}`); // help
   }
 };
+
 
 // PROCESS API RESPONSE
 
@@ -87,6 +89,9 @@ const getBusInfo = (data: busObject[]) => {
   return firstFive;
 };
 
+
+// DISPLAY DATA
+
 const display = (arrivingBusArray: busObject[]) => {
   for (const bus of arrivingBusArray) {
     const returnString = `ID: ${bus.lineId}, Destination: ${
@@ -97,7 +102,6 @@ const display = (arrivingBusArray: busObject[]) => {
   // console.log(bus.timeToLive); // Check timeToLive of data (expire) - edge case of later bus catching up with earlier bus
 };
 
-// DISPLAY DATA
 
 // ----- MAIN ----
 main();
